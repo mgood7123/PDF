@@ -1,0 +1,71 @@
+This is an implementation of the intersection of a CF grammar and a FS
+automaton, as described by Yehoshua Bar-Hillel et al., "On formal
+properties of simple phrase structure grammars", pp. 116-150, 1964.
+
+
+The input consists of 1+n sections. The first one describes the CFG
+and the follwing ones describe FSAs.  Each section is terminated by a
+line with a single dot in it.
+
+The input is line-oriented.  A long line can be broken by a backslash
+at the end of a line; backslashes in any other position are just
+backslashes.  Comments start with a #, and continue to end of line.
+There is no way to use # as a symbol.
+
+The CFG section starts with a line specifying a list of one or more
+start symbols.  The further lines are production rules of the form
+
+	N -> A b C ...
+
+Symbols may contain anything but layout; the -> is treated as a
+symbol.  Terminals and nonterminals are not formally distinguished.
+Any symbol defined in the grammar is a nonterminal, any symbol used
+but not defined is a terminal.  The program reports which symbols it
+has identified as terminals and nonterminals.
+
+A FSA section starts with two lines, the first line specifying one or
+more start states and the second line one or more end states, as
+unsigned integers.  The further lines each contains a transition of
+the form
+
+	state#1 x... state#2
+
+where x is any symbol and x... is a non-empty sequence of such
+symbols.  x can be a nonterminal defined in the grammar, in which case
+it just means that the input described by the FSA can contain
+nonterminals.
+
+A sequence of more than one x implies anonymous states, the ones
+between the various xs.  The state numbers chosen for these start at
+one above the highest specified state.  This may be unfortunate, and
+it is sometimes handy to use a start state 1 and an end state 0, to
+remedy this.
+
+The symbol ? has a special meaning in the FSA section and stands for
+all terminals in the grammar.  It cannot be used in the grammar.
+There is no way to use ? itself as a symbol.
+
+The FSA need not be deterministic but must be epsilon-free.  Modifying
+the algorithm to accept epsilon moves would not be not trivial.
+
+The grammar may contain terminals that do not occur in the FSA and vice
+versa, but such terminals will (of course) be eliminated from the
+intersection grammar.
+
+When the FSA does not restrict the CFG at all, one would probably want
+the program to finally yield the original grammar again.  This does
+not happen, because the state numbers remain attached to the symbols
+in the output grammar.  The -r option tries to remedy this, by
+substituting back the generated rules for the start symbol and the
+terminal symbols.  The renaming of the other symbols remains,
+unfortunately.
+
+The option -v switches on the verbose mode.  
+
+Some variable-sized data is kept in arrays, but the grammar nodes and
+the strings are allocated dynamically; all allocation is checked.
+
+
+
+make GRAMMAR=gramX test_cfg-fsa
+	runs a test on gramX

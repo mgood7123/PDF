@@ -1,0 +1,40 @@
+# Suffix grammar for:
+#
+# S -> A S B
+# S -> c
+# A -> a
+# B -> b
+# B -> 
+
+St
+S -> A S B
+#St -> A S B
+St -> At S B
+St -> Ax S B
+St -> Ax St B
+St -> Ax Sx B
+St -> Ax Sx Bt
+Sx -> Ax Sx Bx
+
+S -> c
+#St -> c
+# St -> 
+
+A -> a
+#At -> a
+Ax -> ax
+ax -> 
+
+B -> b
+#Bt -> b
+Bx -> bx
+bx ->
+
+B -> 
+# Bx -> 
+.
+1
+2
+1 c 2
+.
+

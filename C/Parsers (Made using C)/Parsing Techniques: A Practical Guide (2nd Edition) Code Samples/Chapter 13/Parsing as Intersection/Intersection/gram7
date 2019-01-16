@@ -1,0 +1,14 @@
+# grammar terminals not occurring in the fsa and vice versa
+S
+S -> A z B
+S -> C
+A -> a
+B -> b
+C -> c
+.
+1
+2
+1 c 2
+1 y 2
+.
+

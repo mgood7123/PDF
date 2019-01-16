@@ -1,0 +1,7 @@
+This is a simple implementation of a deterministic 2-way PDA interpreter.
+
+Obtains transition table and input as C code.
+
+Two sample transition tables are provided: one for palindromes and
+one for a simple LALR(1) parser.
+

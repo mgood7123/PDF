@@ -1,0 +1,14 @@
+# from chapter04.tex
+Expr
+Expr -> Expr + Term
+Expr -> Term
+Term -> Term * Factor
+Term -> Factor
+Factor -> ( Expr )
+Factor -> i
+.
+# (i+i)+*i
+1
+0
+1 ( i + i ) + * i 0
+.

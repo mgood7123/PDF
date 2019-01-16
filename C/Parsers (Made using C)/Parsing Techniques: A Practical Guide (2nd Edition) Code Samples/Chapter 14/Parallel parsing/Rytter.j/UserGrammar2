@@ -1,0 +1,7 @@
+# Sikkel's example 14.18.
+S : S A
+S : X X
+X : a
+A : Y B
+B : S S
+Y : b

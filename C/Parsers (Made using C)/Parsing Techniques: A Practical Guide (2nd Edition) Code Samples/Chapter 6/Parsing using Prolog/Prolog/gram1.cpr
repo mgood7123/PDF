@@ -1,0 +1,14 @@
+/* example from book */
+
+s_n --> d_n, c_n.
+s_n --> a_n, b_n.
+a_n --> [a].
+a_n --> [a], a_n.
+b_n --> [b], [c].
+b_n --> [b], b_n, [c].
+c_n --> [c].
+c_n --> [c], c_n.
+d_n --> [a], [b].
+d_n --> [a], d_n, [b].
+
+try :- s_n([a,a,b,b,b,c,c,c],[]).

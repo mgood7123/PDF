@@ -1,0 +1,318 @@
+		Some Notes on Szymanski's LR(k,inf) Algorithm
+
+Szymanski [NonCanonical 1973] writes: "all our parsing methods degenerate to
+the LR(0) method when this value (i.e. 0) is chosen for k." (page 43), but the
+algorithm does not.  Several attempts to remedy this gracefully have failed,
+and it is interesting to see why.
+
+The basic problem is that the algorithm shifts over the first token of the
+look-ahead and for k=0 this token does not exist.  In essence Szymanski's
+algorithm is the LR algorithm with both terminals and non-terminals symbols in
+the look-ahead. So we shall first consider Knuth's original algorithm and then
+see how we can change it into Szymanski's format with a minimum of change.
+
+This report is probably overly detailed, but simple modifications to
+Szymanski's algorithm have led nowhere.
+
+The Original Algorithm
+=======================
+
+Knuth [LR 1965] describes the LR algorithm as follows (page 616 ff):
+
+The stack and the input form a single string; a gap is hinted at by a
+vertical bar:
+
+S_0 X_1 S_1 ... X_n S_n | Y_1 ... Y_k ...
+
+Algorithm 1:
+
+Step 0, initialize:
+
+S_n is the set of active items after the n-th symbol on the stack, with
+k-token look-ahead string.
+
+Step 1, predict:
+
+S'_n is the entire item set, active + predicted.  Formula (18) computes the
+prediction by closure over X_{j+1}, the symbol after the dot.
+
+[p, j, $alpha$] ==  A_p -> X_1 X_2 ... X_j dot X_{j+1} ... X_n [$alpha$]
+
+i.e., $alpha$ is the look-ahead string of the entire item; |$alpha$|=k.
+This is the reduce look-ahead.
+
+Step 2, select & act:
+
+Compute the shift look-ahead $beta$ for items with j<n:
+
+(19) $beta$ for [p, j, $alpha$] == H_k(X_{j+1} ... X_n [$alpha$])
+
+i.e., $beta$ is the look-ahead looking string as seen from the dot.
+Z is the set of all shift look-aheads.
+
+For j=n (reduce items) this degenerates into the reduce look-ahead set $alpha$:
+
+(20) H_k(X_{j+1} ... X_j [$alpha$]) = H_k([$alpha$]) = $alpha$,
+
+since |$alpha$|=k.  (What is s in 0<=p<=s? Just the number of Z_ps?)
+Z_p is the set of reduce look-aheads of rule p.
+
+Three possibilities: shift (Y in Z), reduce by p (Y in Z_p), reject
+(Y in neither).
+
+This results in a new stack/input string
+
+S_0 X_1 S_1 ... X_n' S_n' X_{n'+1} ?? | Y'_1 ... Y'_k ...
+
+where n'=n, Y'_1=Y_2, ..., Y'_k=Y_{k+1} if there was a shift, and
+n'<=n, Y'=Y if there was a reduce (no eps-rules).
+Both produce a new token X_{n'+1} on the top of the stack.
+There is a still unknown set at n'+1, indicated by the ??.
+S_n' is the correct active set at n' and has the correct look-aheads, since
+it is out of reach for both shift and reduce.
+
+Step 3, shift: [actually GOTO]
+
+Compute again S'_n', i.e. add the predictions to S_n'.  Now shift over the
+symbol in position n+1, which has now been narrowed down to X_{n+1}, as
+follows:
+
+Reject all items in which the dot is not in front of X_{n+1}; move the dot
+over X_{n+1} in all items that survived.  The result is the active set at n+1,
+S_{n+1}.
+
+If this set now is S'->S.#^k, we are done; otherwise we are back at step 1.
+
+End of Algorithm 1
+
+We see that there are two kinds of look-ahead sets for a given item I
+A->BC.DE[$alpha$]: the "reduce look-ahead set" $alpha$, which determines
+whether I is a reduce item when the dot has moved to the end; and the "shift
+look-ahead set" $beta$=FIRST_k(DE$alpha$), which determines whether I is a
+shift item.  For a reduce item they coincide.  Since both follow the dot, we
+can call them together "dot look-ahead sets".
+
+Filtering the Items
+===================
+
+Note that there are >two< places in which the set of items is filtered: at
+Step 2, where the dot look-ahead set rejects items, and at Step 3 where the
+shifting over X_{n+1} can reject items.
+
+Or can it?  It cannot after a reduce move: the reduced symbol X_{n+1} appears
+because it was first predicted at position n, so a shift over it will always
+be possible.
+
+For k>=1 it can, but it cannot remove all items: X_{n+1} is the old Y_1, and
+since Y_1...Y_k was the shift look-ahead of at least one item (or we wouldn't
+be shifting), it was either X_{j+1} in (19) or produced by that symbol in the
+prediction computation in Step 1.
+
+But this does not apply for k=0: survival in step 2 does not involve Y_1 if
+k=0, so the selection in Step 3 may remove any or all items.
+
+The Structure of the Algorithm
+==============================
+
+Structure of the algorithm as stated:
+
+n:=0, initialize active set for S_0;
+(
+	predict entire set from active set for S_n, = S'_n;
+	select applicable item(s) on dot look-ahead;
+	act on the applicable item(s) and set n_1 to new length of stack;
+	get entire set for S_{n_1}, = S'_{n_1};
+	shift over X_{n_1+1};
+	select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+	n:=n_1+1;
+)+
+finish;
+
+This already includes the optimization that we remember S' between symbols
+rather than S.  This allows us to "get" S'_{n_1} rather than to compute it
+again from S_{n_1}.
+
+For k=0 the following observations can be made:
+
+n:=0, initialize active set for S_0;
+(
+	predict entire set from active set for S_n, = S'_n;
+		# expands symbol after the dot; look-ahead sets are empty
+	select applicable item(s) on dot look-ahead;
+		# no selection done; all items are applicable
+	act on the applicable item(s) and set n_1 to new length of stack;
+	get entire set for S_{n_1}, = S'_{n_1};
+	shift over X_{n_1+1};
+		# is possible since symbol after the dot has been expanded
+	select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+	n:=n_1+1;
+)+
+finish;
+
+Traditionally the algorithm has the following form:
+
+n:=0, initialize entire set for S_0;
+(
+	# PDA move:
+	select & act on look-ahead and set n_1 to new length of stack;
+
+	# compute new state:
+	produce entire set for S'_{n_1+1};
+	n:=n_1+1;
+)+
+finish;
+
+which in terms of the above amounts to
+
+n:=0, initialize active set for S_0;
+predict entire set from active set for S_0, = S'_0;
+(
+	# PDA move:
+	select applicable item(s) on dot look-ahead;
+	act on the applicable item(s) and set n_1 to new length of stack;
+
+	# compute new state:
+	get entire set for S_{n_1}, = S'_{n_1};
+	shift over X_{n_1+1};
+	select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+	n:=n_1+1;
+	predict entire set from active set for S_n, = S'_n;
+)+
+finish;
+
+For k=0 the following observations can be made:
+
+n:=0, initialize active set for S_0;
+predict entire set from active set for S_0, = S'_0;
+	# expands symbol after the dot; look-ahead sets are empty
+(
+	# PDA move:
+	select applicable item(s) on dot look-ahead;
+		# no selection done; all items are applicable
+	act on the applicable item(s) and set n_1 to new length of stack;
+
+	# compute new state:
+	get entire set for S_{n_1}, = S'_{n_1};
+	shift over X_{n_1+1};
+		# is possible since symbol after the dot has been expanded
+	select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+	n:=n_1+1;
+	predict entire set from active set for S_n, = S'_n;
+		# expands symbol after the dot; look-ahead sets are empty
+)+
+finish;
+
+Szymanski has an even simpler outline:
+
+n:=0;
+(
+	# compute new state:
+	compute applicable item set for S_n;
+
+	# 2PDA move:
+	act on the applicable item(s) and produce new stack;
+)+
+finish;
+
+This requires the inclusion of the selection of applicable item(s) on dot
+look-ahead in the computation of the new state:
+
+n:=0, initialize active set for S_0;
+predict entire set from active set for S_0, = S'_0;
+select applicable item(s) on dot look-ahead;
+(
+	# 2PDA move:
+	act on the applicable item(s) and set n_1 to new length of stack;
+
+	# compute new state:
+	get entire set for S_{n_1}, = S'_{n_1};
+	shift over X_{n_1+1};
+	select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+	n:=n_1+1;
+	predict entire set from active set for S_n, = S'_n;
+	select applicable item(s) on dot look-ahead;
+)+
+finish;
+
+We also have to move the action to the end of the loop body; this is not so
+simple.  Calling the four fragments A, B, C, D, we get 
+
+A (BC)+ D =
+ABCBCB..CBCBCD =
+AB (CB)* CD
+
+which, however, has a first-follow conflict.  So we need an if-statement:
+
+n:=0, initialize active set for S_0;
+predict entire set from active set for S_0, = S'_0;
+select applicable item(s) on dot look-ahead;
+# 2PDA move:
+act on the applicable item(s) and set n_1 to new length of stack;
+(
+	# compute new state:
+	get entire set for S_{n_1}, = S'_{n_1};
+	shift over X_{n_1+1};
+	select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+	n:=n_1+1;
+	predict entire set from active set for S_n, = S'_n;
+	select applicable item(s) on dot look-ahead;
+
+	# 2PDA move:
+	if finished finish;
+	act on the applicable item(s) and set n_1 to new length of stack;
+)+
+
+and another if-statement:
+
+n:=0;
+(
+	# compute new state:
+	if n = 0:
+		initialize active set for S_0;
+	else:
+		get entire set for S_{n_1}, = S'_{n_1};
+		shift over X_{n_1+1};
+		select the active set S_{n_1+1} from S'_n on X_{n_1+1};
+		n:=n_1+1;
+	end if;
+	predict entire set from active set for S_n, = S'_n;
+	select applicable item(s) on dot look-ahead;
+
+	# 2PDA move:
+	if finished finish;
+	act on the applicable item(s) and set n_1 to new length of stack;
+)+
+
+Now the algorithm is almost the same as Szymanski's, but there is a
+difference.  Our algorithm predicts the entire set by expanding the
+non-terminal after the dot and then computes the dot look-aheads in the next
+step.  Szymanski combines these steps by expanding the k-th symbol of the
+look-ahead if it is a non-terminal.  This keeps the k-token look-ahead up to
+date, while at the same time providing a predicted symbol right after the dot
+to shift over, provided k>=1.  Note that this k-th symbol is always there,
+even at the end of the input, since the input is extended with k closers '>'.
+
+This is what happens when k is reduced from 4 to 0; 't' indicates a look-ahead
+token a and 'A' is the non-terminal being expanded.  For k=0 there is no
+look-ahead computation but the prediction still has to be done, and the plan
+fails.
+
+      k=4      .tttA
+      k=3      .ttA
+      k=2      .tA
+      k=1      .A
+      k=0     ?.
+
+The bottom line is that the algorithm cannot reduce gracefully to k=0 without
+changing the look-ahead computation strategy.  Changing the strategy would
+probably be the best option, but would require rethinking the algorithm. So we
+opt for dropping the requirement "gracefully": for k=0 we expand the token
+after the dot, just as for k=1, but we still work with a look-ahead length of
+0, although one of length 1 is available. Kludgey, but works.
+
+There is one remaining problem: no symbol to be expanded will be available at
+the end of the input. We have two options: we can either 1. extend the input
+with an extra '>', always or only when k=0, which is messy, or 2. avoid the
+expansion when there is no symbol, which is more logical.  So option 2 it is.
+It does mean abandoning an item in the middle of the "close" operation in
+Procedure 2.1, due to unclosability, which by itself is not unreasonable.

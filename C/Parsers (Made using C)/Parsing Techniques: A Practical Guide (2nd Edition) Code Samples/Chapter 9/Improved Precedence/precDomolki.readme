@@ -1,0 +1,7 @@
+Two versions of Algorithm W from Shyamasundar's
+Precedence parsing using Domolki's algorithm
+Intern. J. Comput. Math., A6, 1977, pp. 105-114
+
+parse.c		the original algorithm, corrected
+parse2.c	a structured rewrite
+

@@ -1,0 +1,13 @@
+Implementation of the LR(k,inf) parser described in Szymanski's thesis, 1973.
+
+Interpreter; obtains grammar and input as C code.
+
+Szymanski writes: "all our parsing methods degenerate to the LR(0)
+method when this value (i.e. 0) is chosen for k." (page 43), but the
+algorithm does not.  An attempt to remedy this gracefully has been
+made, trying to modify the algorithm as little as possible.
+
+Left recursion not implemented.
+
+It should be relatively easy to add LR(k,t) to it, but that has not
+been implemented.

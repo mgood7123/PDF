@@ -1,0 +1,9 @@
+The Exhaustive Recursive Descent Parser from Chapter 6, in Pascal
+
+Parser code for the built-in grammar
+
+S -> AB | DC
+A -> a | aA
+B -> bc | bBc
+D -> ab | aDb
+C -> c | cC

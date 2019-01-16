@@ -1,0 +1,18 @@
+/* example from book, creating parse trees */
+
+s_n('S->AB'(T1,T2)) --> a_n(T1), b_n(T2).
+s_n('S->DC'(T1,T2)) --> d_n(T1), c_n(T2).
+a_n('A->a') --> [a].
+a_n('A->aA'(T1)) --> [a], a_n(T1).
+b_n('B->bc') --> [b], [c].
+b_n('B->bBc'(T1)) --> [b], b_n(T1), [c].
+c_n('C->c') --> [c].
+c_n('C->cC'(T1)) --> [c], c_n(T1).
+d_n('D->ab') --> [a], [b].
+d_n('D->aDb'(T1)) --> [a], d_n(T1), [b].
+
+/* and printing them all */
+try :- s_n(T,[a,a,b,b,c,c],[]), nl, print(T), fail.
+/* try :- s_n(T,S,[]),
+	nl, print('S:'), print(S), print(' tree:'), print(T), fail. */
+/* try :- s_n(T,[a,a,a,b,b,c,c,c],[]), nl, print(T), fail. */

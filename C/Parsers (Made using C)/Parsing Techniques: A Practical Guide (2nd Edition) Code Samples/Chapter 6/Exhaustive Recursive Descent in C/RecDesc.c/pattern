@@ -1,0 +1,8 @@
+P -> QRST
+{
+  static void t(void) { tail(); }
+  static void T_t(void) { T(t); }
+  static void ST_t(void) { S(T_t); }
+  static void RST_t(void) { R(ST_t); }
+  pushrule("P -> QRST"); Q(RST_t); poprule();
+}

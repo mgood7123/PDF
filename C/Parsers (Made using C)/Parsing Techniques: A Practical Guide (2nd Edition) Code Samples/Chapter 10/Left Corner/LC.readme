@@ -1,0 +1,7 @@
+Running converted LC(1) grammars on the LL(1) parser generator LLgen.
+
+Three LL(1) grammars are provided for the LC(1) grammar of Figure 10.2,
+one derived as in the book, the same with extesive reporting, and a
+hand-generated, better structured one.
+
+Requires LLgen (http://www.cs.vu.nl/~ceriel/LLgen.html).

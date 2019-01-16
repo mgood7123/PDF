@@ -1,0 +1,42 @@
+	Some remarks about Shyamasundar's
+	Precedence parsing using Domolki's algorithm
+	Intern. J. Comput. Math., A6, 1977, pp. 105-114
+
+
+Section 3:
+
+-	The section titled "Construction of the syntax matrix M, of a
+given CFG, G" is misleading in that the resulting matrix is never used
+and is immaterial to the algorithm.
+
+Section 4:
+
+-	j indicates the number of symbols on the stack - 1, rather than
+that number.
+
+-	Step 2a: the expression "Q = ..." must be moved to after
+"otherwise" in Step 2b.  As it stands, 2b is reached from 2a with Q =
+transition (q, y) and from 3b with Q = q.
+
+-	Step 2b: shift (y, Q) to the top of the stack, rather than just
+y (obviously).
+
+-	Step 3a: retrieve the first 1 bit from Q AND V rather then from
+V.  There may be partially recognized, longer RHSs in Q to the left of
+the correctly recognized RHS.  (This cannot happen in the example.)
+
+-	Step 3b: shift (A, Q) to the top of the stack, rather than just
+A (obviously).
+
+-	Step 3b: "j = j - r - 1" should be "j = j - r + 1": r records
+are removed and 1 is added in its place.  This means that j is not used
+as the stack pointer; if it were the next push would be wrong.  Its only
+use is in testing for termination in Step 3b.
+
+-	Step 3b: "Set p = A;" is superfluous.  We have just stacked (A,
+Q), so p is already A.
+
+-	Step 5:  The algorithm handles single-length productions specially,
+but there seems to be no reason for this.  The algorithm works equally
+well when SLPs get their own partitions in M[][]; then the jump to Step
+5 is never taken.  Steps 3a and 3b are perfectly capable of handling SLPs.

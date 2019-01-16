@@ -1,0 +1,3 @@
+#define	STACKSIZE	100
+#define	TEXTSIZE	100
+

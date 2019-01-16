@@ -1,0 +1,15 @@
+S
+S -> T
+T -> A B
+T -> D E
+A -> a
+B -> b C
+C -> c
+D -> d F
+E -> e
+F -> f D
+.
+1
+1
+1 ? 1
+.

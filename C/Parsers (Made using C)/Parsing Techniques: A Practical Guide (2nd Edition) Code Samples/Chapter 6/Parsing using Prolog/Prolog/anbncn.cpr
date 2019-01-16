@@ -1,0 +1,14 @@
+text(S,N,R):- a(S,N,R1), b(R1,N,R2), z(R2,N,R).
+
+a(S,[i],R):- symbol(S,a,R).
+a(S,[i|N],R):- symbol(S,a,R1), a(R1,N,R).
+
+b(S,[i],R):- symbol(S,b,R).
+b(S,[i|N],R):- symbol(S,b,R1), b(R1,N,R).
+
+z(S,[i],R):- symbol(S,c,R).
+z(S,[i|N],R):- symbol(S,c,R1), z(R1,N,R).
+
+symbol([A|R],A,R).
+
+try :- text([a,a,a,b,b,b,c,c,c],X,[]), print(X), nl.

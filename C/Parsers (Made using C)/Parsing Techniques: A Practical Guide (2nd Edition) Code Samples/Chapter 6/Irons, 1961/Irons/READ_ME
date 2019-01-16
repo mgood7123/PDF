@@ -1,0 +1,7 @@
+This is a C version of the parsing algorithm given by E.T. Irons, "A syntax-
+directed compiler for ALGOL 60", Commun. ACM, Vol 4, #1, Jan 1961, pp. 51-55.
+
+Interpreter; obtains grammar and input as C code.
+
+DIAGRAM.goto.c is the original code; DIAGRAM.c is a more structured version.
+

@@ -1,0 +1,10 @@
+The Exhaustive Recursive Descent Parser from Chapter 6, in GNU C,
+using GNU C's facilities for local procedures.
+
+Parser code for the built-in grammar
+
+S -> AB | DC
+A -> a | aA
+B -> bc | bBc
+D -> ab | aDb
+C -> c | cC

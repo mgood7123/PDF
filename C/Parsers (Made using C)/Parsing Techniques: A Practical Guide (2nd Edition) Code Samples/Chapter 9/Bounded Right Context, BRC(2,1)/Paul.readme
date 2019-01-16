@@ -1,0 +1,5 @@
+This is a C version of the parser described in J. Eickel, M. Paul, F.L. Bauer,
+K. Samelson, A syntax-controlled generator of formal language processors,
+Commun. ACM, Vol. 6, no. 8, Aug 1963, 451-455.
+
+Interpreter; obtains grammar and input as C code.

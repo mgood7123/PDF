@@ -1,0 +1,7 @@
+The Partitioned LL(1) parser from Chapter 10 (Friede, 1979)
+
+Parser code for the built-in grammar
+
+   S -> A | B
+   A -> aAb | ab
+   B -> aBc | ac

@@ -1,0 +1,75 @@
+This program is a simple implementation of a deterministic 2-way PDA
+interpreter.  It is called
+
+	pda [-v] <input
+
+where the -v option causes input, head position and stack to be printed after
+each transition.
+
+The transitions are supplied in an array struct transition transition[], and
+consist of 5 fields:
+
+	{old_stack, input, new_stack, motion, action}
+
+as described in table.h and used in LALRtable.c and palin.c.
+
+The old_stack and the new_stack contain states, with the top at the end of the
+strings.  The input string can contain shift symbols, lookahead sets and
+reduced non-terminals.  The integer motion specifies the head motion.  The
+action string is printed when the transition is applied.
+
+In principle, states can be represented by arbitrary string segments, for
+example "q10", "foo", "((#", etc., but stack matching is based on simple
+string matching, so it is prudent to demarcate the states in some unique
+fashion: "{10}", "'X'", "'(,(,#'", etc.  Note that each of these three is a
+state.
+
+The old_stack may contain one or more jokers, which are supposed to be of the
+form x*y where x and y are arbitrary characters.  A joker x*y in the pattern
+will match any string x...y in the stack, where
+... does not contain x or y.  This usually does what one wants:
+
+{*} in the pattern matches for example {Q10,#}, {::}, {*} or {} in the stack,
+but it does not match {{x} or {y}}.  Since matching proceeds from right to
+left, it would match {x}, but would fail on {y}}.
+
+The input has three formats: it can be a shift token, for example "a", a
+lookahead set enclosed in square brackets, for example "[bcd]" or epsilon: "".
+
+The new_stack can be NULL, which means that this transition stops the
+automaton, after printing the action; to be used for accept states (or error
+states).  The automaton also stops if there is no applicable transition.
+(New_stack can also be "", in which case the empty string is stacked and
+nothing special happens.)
+
+The integer motion tells if the head should move right (+1), left (-1), or not
+at all (0).  Other values also work, but are not supported.
+
+The action string may start with a minus sign, which means that the transition
+is unreachable.  It will not be reported as unused, and its (probably
+unintended) use IS reported.
+
+An example of an LR transition is
+
+	{"'*'{2}", "[#-)]", "'E'", 0, "E->T"},
+
+which says: "If the stack holds anything matching '*'{2} and the first token
+in the input is one of #, -, and ), then pop the matching part from the stack,
+push 'E' back on the stack, don't move the head, and print the text E->T."  In
+an LR parser for the usual grammar for arithmetic expressions, the stack would
+hold 'T'{2}, which would be reduced to 'E' using the rule E->T.
+
+Officially a PDA includes a finite state in addition to the stack, but the
+interpreter does not.  See palin.c for how to handle this.
+
+Unused transitions are reported at the end of the output.
+
+There is a dynamic test against nondeterminism, although a static test could
+be implemented easily.
+
+It is tempting to try and implement Cook's linear interpreter here, but the
+PDA format it uses is more restricted that the one supported here, in that it
+allows transitions of the form (q1,A)->(q2,AB), (q1,A)->(q2,A), and
+(q1,A)->(q2,), where the first component is the finite state and the second is
+the top of the stack.  Research would be required to see if an adaptation is
+possible.

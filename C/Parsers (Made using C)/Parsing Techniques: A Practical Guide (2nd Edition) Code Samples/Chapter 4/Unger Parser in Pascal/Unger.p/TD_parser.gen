@@ -1,0 +1,341 @@
+ program Unger(input, output);               { Unger parser in Pascal }
+
+ const
+     NoSymbol =       ' ';
+     MaxRules =        10;
+     MaxRhsLength =    10;
+     MaxInputLength =  10;
+     ArraySize =     1000;                 { for all stacks and lists }
+
+ type
+     SymbolType = char;
+     RuleNmbType = integer;
+
+     RhsType = packed array [1..MaxRhsLength] of SymbolType;
+     InputStringType = packed array [1..MaxInputLength] of SymbolType;
+
+     RuleType = record LhsField: SymbolType; RhsField: RhsType; end;
+
+     StackElemType =
+     record
+         NmbField: RuleNmbType; RhsUsedField: integer;     { the rule }
+         PosField, LenField, InpUsedField: integer;   { the substring }
+     end;
+
++    KnownParsingType = record StartField, EndField: integer; end;
++
++    KnownGoalType =
++    record
++        NmbField: RuleNmbType; PosField, LenField: integer;{ the goal}
++        StartParsingField: integer;             { temporary variable }
++        KnownParsingField: array [1..ArraySize] of KnownParsingType;
++        NKnownParsingsField: integer;
++    end;
++
+ var
+     InputString: InputStringType;
+     InputLength: integer;
+
+     Grammar: array [1..MaxRules] of RuleType;
+     NRules: integer;
+     Start: SymbolType;
+
+     Stack: array [1..ArraySize] of StackElemType;
+     NStackElems: integer;
+
+     RuleStack: array [1..ArraySize] of RuleNmbType;
+     NRulesStacked: integer;
+     NDerivations: integer;
+
++    KnownGoalList: array [1..ArraySize] of KnownGoalType;
++    NKnownGoals: integer;
++    KnownRuleList: array [1..ArraySize] of RuleNmbType;
++    NKnownRules: integer;
++
+                                                { RULE ADMINISTRATION }
+ procedure StoreRule(lhs: SymbolType; rhs: RhsType);
+     begin
+         NRules:= NRules+1;
+         with Grammar[NRules] do
+         begin LhsField:= lhs; RhsField:= rhs; end;
+     end { StoreRule };
+
+ procedure WriteRhs(rhs: RhsType);
+     var n: integer;
+     begin
+         for n:= 1 to MaxRhsLength do
+             if rhs[n] <> NoSymbol then write(rhs[n]);
+     end { WriteRhs };
+
+ procedure WriteRule(nmb: RuleNmbType);
+     begin
+         with Grammar[nmb] do
+         begin
+             write(LhsField, ' -> "');
+             WriteRhs(RhsField);
+             write('"');
+         end;
+     end { WriteRule };
+
+ procedure PushRule(n: RuleNmbType);
+     begin
+         NRulesStacked:= NRulesStacked+1;
+         RuleStack[NRulesStacked]:= n;
+     end;
+
+ procedure PopRule;
+     begin NRulesStacked:= NRulesStacked-1; end;
+
+ procedure ParsingFound;
+     var r: integer;
+     begin
+         NDerivations:= NDerivations+1;
+         for r:= 1 to NRulesStacked do
+         begin WriteRule(RuleStack[r]); writeln; end;
+         writeln;
+     end { ParsingFound };
+
+                                         { HANDLING OF KNOWN PARSINGS }
++function KnownGoalNumber(nmb: RuleNmbType; pos, len: integer):integer;
++    var n: integer;
++    begin
++        KnownGoalNumber:= 0;
++        for n:= 1 to NKnownGoals do
++            with KnownGoalList[n] do
++                if (nmb=NmbField)
++                and (pos=PosField)
++                and (len=LenField) then
++                    KnownGoalNumber:= n;
++    end { KnownGoalNumber };
++
+-procedure StartNewKnownGoal(nmb: RuleNmbType; pos, len: integer);
+-    begin end;
+-
++procedure StartNewKnownGoal(nmb: RuleNmbType; pos, len: integer);
++    begin
++        NKnownGoals:= NKnownGoals+1;
++        with KnownGoalList[NKnownGoals] do
++        begin
++            NmbField:= nmb; PosField:= pos; LenField:= len;
++            StartParsingField:= NRulesStacked+1;
++            NKnownParsingsField:= 0;
++        end;
++    end { StartNewKnownGoal };
++
+-procedure RecordKnownParsing;
+-    begin end;
+-
++procedure RecordKnownParsing;
++    var n, i: integer;
++    begin
++        with Stack[NStackElems] do
++        begin
++            n:= KnownGoalNumber(NmbField, PosField, LenField);
++            with KnownGoalList[n] do
++            begin
++                NKnownParsingsField:= NKnownParsingsField+1;
++                with KnownParsingField[NKnownParsingsField] do
++                begin
++                    StartField:= NKnownRules+1;
++                    for i:= StartParsingField to NRulesStacked do
++                    begin
++                        NKnownRules:= NKnownRules+1;
++                        KnownRuleList[NKnownRules]:= RuleStack[i];
++                    end;
++                    EndField:= NKnownRules;
++                end;
++            end;
++        end;
++    end { RecordKnownParsing };
++
+                                             { PARSING STACK HANDLING }
+ procedure PushStack(nmb: RuleNmbType; pos, len: integer);
+     begin
+         NStackElems:= NStackElems+1;
+         with Stack[NStackElems] do
+         begin
+             NmbField:= nmb; RhsUsedField:= 0;
+             PosField:= pos; LenField:= len; InpUsedField:= 0;
+         end;
+     end { PushStack };
+
+ procedure PopStack;
+     begin NStackElems:= NStackElems-1; end;
+
+ function IsToBeAvoided(nmb: RuleNmbType; pos, len: integer): Boolean;
+     var i: integer;
+     begin
+         IsToBeAvoided:= false;
+         for i:= 1 to NStackElems do
+             with Stack[i] do
+                 if (NmbField=nmb)
+                 and (PosField=pos)
+                 and (LenField=len) then
+                     IsToBeAvoided:= true;
+     end { IsToBeAvoided };
+
+ procedure AdvanceTOS(len: integer);
+     begin
+         with Stack[NStackElems] do
+         begin
+             RhsUsedField:= RhsUsedField+1;
+             InpUsedField:= InpUsedField+len;
+         end;
+     end { AdvanceTOS };
+
+ procedure RetractTOS(len: integer);
+     begin
+         with Stack[NStackElems] do
+         begin
+             RhsUsedField:= RhsUsedField-1;
+             InpUsedField:=InpUsedField-len;
+         end;
+     end { RetractTOS };
+
+                                                      { THE AUTOMATON }
+ procedure TryAllRulesFor(lhs: SymbolType; pos, len: integer);
+     var nmb: RuleNmbType;
+
+     procedure DoTopOfStack;
+         var tosSymb: SymbolType; { active symbol on top of Stack }
+
+         procedure DoNextOnStack;
+             var sv: StackElemType;
+             begin { the non-terminal on top of Stack was recognized }
+                 RecordKnownParsing;
+                 { save top of Stack }
+                 sv:= Stack[NStackElems]; NStackElems:= NStackElems-1;
+                 if (NStackElems = 0) then ParsingFound else
+                 begin
+                     AdvanceTOS(sv.LenField);
+                     DoTopOfStack;
+                     RetractTOS(sv.LenField);
+                 end;
+                 { restore top of Stack }
+                 NStackElems:= NStackElems+1; Stack[NStackElems]:= sv;
+             end { DoNextOnStack };
+
+         procedure TryAllLengthsFor
+             (lhs: SymbolType; pos, maxlen: integer);
+             var len: integer;
+             begin
+                 for len:= 0 to maxlen do
+                     TryAllRulesFor(lhs, pos, len);
+             end { TryAllLengthsFor };
+
+         begin { DoTopOfStack }
+             with Stack[NStackElems] do
+             begin
+                 tosSymb:= Grammar[NmbField].RhsField[RhsUsedField+1];
+
+                 if tosSymb = NoSymbol then
+                 begin
+                     if (InpUsedField = LenField) then DoNextOnStack;
+                 end
+                 else if (InpUsedField < LenField) and
+                         (tosSymb = InputString[PosField+InpUsedField])
+                 then
+                 begin { 1 symbol was recognized }
+                     AdvanceTOS(1);
+                     DoTopOfStack;
+                     RetractTOS(1);
+                 end
+                 else TryAllLengthsFor(tosSymb, PosField+InpUsedField,
+                             LenField-InpUsedField);
+             end;
+         end { DoTopOfStack };
+
+-    function KnownGoalSucceeds
+-        (nmb: RuleNmbType; pos, len: integer): Boolean;
+-        begin KnownGoalSucceeds:= false; end;
+-
++    function KnownGoalSucceeds
++        (nmb: RuleNmbType; pos, len: integer): Boolean;
++        var n, oldNRulesStacked, i, j: integer;
++        begin
++            n:= KnownGoalNumber(nmb, pos, len);
++            if n = 0 then KnownGoalSucceeds:= false else
++            begin
++                oldNRulesStacked:= NRulesStacked;
++                with KnownGoalList[n] do
++                begin
++                    for i:= 1 to NKnownParsingsField do
++                        with KnownParsingField[i] do
++                        begin
++                            for j:= StartField to EndField do
++                            begin
++                                NRulesStacked:= NRulesStacked+1;
++                                RuleStack[NRulesStacked]:=
++                                    KnownRuleList[j];
++                            end;
++                            AdvanceTOS(len);
++                            DoTopOfStack;
++                            RetractTOS(len);
++                            NRulesStacked:= oldNRulesStacked;
++                        end;
++                end;
++                KnownGoalSucceeds:= true;
++            end;
++        end { KnownGoalSucceeds };
++
+     procedure TryRule(nmb: RuleNmbType; pos, len: integer);
+         begin
+             if not IsToBeAvoided(nmb, pos, len) then
+                 if not KnownGoalSucceeds(nmb, pos, len) then
+                 begin
+                     PushStack(nmb, pos, len);
+                     StartNewKnownGoal(nmb, pos, len);
+                     write('Trying rule '); WriteRule(nmb);
+                     writeln(' at pos ', pos:0, ' for length ', len:0);
+                     PushRule(nmb);
+                     DoTopOfStack;
+                     PopRule;
+                     PopStack;
+                 end;
+         end { TryRule };
+
+     begin { TryAllRulesFor }
+         for nmb:= 1 to NRules do
+             if Grammar[nmb].LhsField = lhs then
+                 TryRule(nmb, pos, len);
+     end { TryAllRulesFor };
+
+ procedure Parse(inp: InputStringType);
+     var n: integer;
+     begin
+         NStackElems:= 0; NRulesStacked:= 0; NDerivations:= 0;
++        NKnownGoals:= 0; NKnownRules:= 0;       { in procedure Parse }
+         InputLength:= 0;
+         for n:= 1 to MaxInputLength do
+         begin
+             InputString[n]:= inp[n];
+             if inp[n] <> NoSymbol then InputLength:= n;
+         end;
+         writeln('Parsing ', InputString);
+         TryAllRulesFor(Start, 1, InputLength);
+         writeln(NDerivations:0, ' derivation(s) found for string ',
+             InputString);
+         writeln;
+     end { Parse };
+
+ procedure InitGrammar;                                   { Grammar 4 }
+     begin
+         Start:= 'S';
+         StoreRule('S', 'LSR       ');
+         StoreRule('S', '          ');
+         StoreRule('L', '(         ');
+         StoreRule('L', '          ');
+         StoreRule('R', ')         ');
+     end;
+
+ procedure DoParses;
+     begin
+         Parse('())       ');
+         Parse('((()))))  ');
+     end;
+
+ begin
+     NRules:= 0;
+     InitGrammar;
+     DoParses;
+ end.

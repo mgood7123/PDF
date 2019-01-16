@@ -1,0 +1,4 @@
+member(X,[X|L]).
+member(X,[Y|L]) :- member(X,L).
+
+try :- not member(a, [b]), print(ok).

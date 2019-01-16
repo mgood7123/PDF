@@ -1,0 +1,15 @@
+This is an attempt at a naive implementation of Snelling's algorithm, ICS 1973.
+
+Interpreter; obtains grammar and input as C code.
+
+Corrections from the text have been marked by: /* text has: ... */
+
+It is extremely unlikely that the algorithm can indeed do CF parsing in
+O(n^2), but no refutation has been published to date; in fact, the paper does
+not seem to be referenced anywhere.
+
+The algorithm is described in reasonable detail, but not completely.  Filling
+in the last details allows some examples in the paper to be reproduced, but
+not all of them at the same time, it seems.  Further clarification would be
+most welcome.
+

@@ -1,0 +1,35 @@
+/*
+	Cancellation parsing in Prolog.
+	Example of an epsilon rule.
+*/
+
+s(C) --> {not member(s,C)},				{report(s1leftrec,C)},
+		s([s|C]), [a],
+		untoken(bar(s)), s(C).
+s(C) --> {not member(s,C)},				{report(s1rightrec,C)},
+		[a], s([]),
+		untoken(bar(s)), s(C).
+s(C) --> {not member(s,C)},				{report(s2,C)},
+		not_barred,
+		untoken(bar(s)), s(C).
+
+s(C) --> [bar(s)].
+
+/* auxiliaries */
+
+print_rest(S,S) :- print('rest='), print(S), nl.
+
+untoken(T,S,[T|S]).
+not_barred(S,S):- not(S = [bar(_)|_]).
+
+member(X,[X|L]).
+member(X,[Y|L]) :- member(X,L).
+
+report(T1,T2) :- print(T1), tab(1), print(T2), nl.
+
+/* driver */
+
+text(S,R) :- s([],S,R).
+
+try :- text([a,a,a],[]), print(ok), nl, fail.
+/*try:-listing.*/

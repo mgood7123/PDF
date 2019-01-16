@@ -1,0 +1,48 @@
+/*
+	Cancellation parsing of the expression grammar in Prolog.
+*/
+
+expr(C) --> {not member(expr,C)},
+		expr([expr|C]), ['+'], term([]),
+		{print('expr->expr+term'), nl},
+		untoken(bar(expr)), expr(C).
+expr(C) --> {not member(expr,C)},
+		term([expr|C]),
+		{print('expr->term'), nl},
+		untoken(bar(expr)), expr(C).
+term(C) --> {not member(term,C)},
+		term([term|C]), ['*'], factor([]),
+		{print('term->term*factor'), nl},
+		untoken(bar(term)), term(C).
+term(C) --> {not member(term,C)},
+		factor([term|C]),
+		{print('term->factor'), nl},
+		untoken(bar(term)), term(C).
+factor(C) --> {not member(factor,C)},
+		[i],
+		{print('factor->i'), nl},
+		untoken(bar(factor)), factor(C).
+factor(C) --> {not member(factor,C)},
+		['('], expr([]), [')'],
+		{print('factor->(expr)'), nl},
+		untoken(bar(factor)), factor(C).
+
+expr(C) --> [bar(expr)].
+term(C) --> [bar(term)].
+factor(C) --> [bar(factor)].
+
+/* auxiliaries */
+
+print_rest(S,S) :- print('rest='), print(S), nl.
+
+untoken(T,S,[T|S]).
+
+member(X,[X|L]).
+member(X,[Y|L]) :- member(X,L).
+
+text(S,R) :- expr([],S,R).
+
+try :- text([i,'*',i,'+',i,'*',i],[]).
+%try :- text([i,'+',i,'*',i],[]).
+%try :- text([i],[]).
+%try :- listing.

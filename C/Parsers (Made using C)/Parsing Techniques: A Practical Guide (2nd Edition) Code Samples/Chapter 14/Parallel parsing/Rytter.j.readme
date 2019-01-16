@@ -1,0 +1,3 @@
+Simulation of the parallel Rytter Parser of Section 14.4.3, in Java.
+
+Interpreter; the grammar is read in by the interpreter.

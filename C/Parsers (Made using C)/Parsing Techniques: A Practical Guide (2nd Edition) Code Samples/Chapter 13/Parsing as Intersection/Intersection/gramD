@@ -1,0 +1,32 @@
+ St
+ S -> E
+ St -> E
+ St -> Et
+ St -> 
+
+ E -> E - T
+ Et -> E - T
+ Et -> Et - T
+ Et -> - T
+ Et -> T
+ Et -> Tt
+ Et -> 
+
+ E -> T
+# Et -> T
+
+ T -> n
+ Tt -> n
+ Tt ->
+
+ T -> ( E )
+ Tt -> ( E )
+ Tt -> E )
+ Tt -> Et )
+ Tt -> )
+# Tt ->
+.
+1
+2
+1 - n ) 2
+.

@@ -1,0 +1,23 @@
+#	This file is part of the CS sentence generator CSgen
+#	Written by Dick Grune, Vrije Universiteit, Amsterdam.
+#	$Id: READ_ME,v 1.3 2016-09-19 08:26:14 Gebruiker Exp $
+#
+
+This program generates sentences from any Context-Sensitive grammar, in
+breadth-first fashion, until all possible sentences have been generated or
+until interrupted (although it usually runs out of memory before that).
+
+Unlike the name CSgen suggests, the program accepts all Type 0 grammars,
+including those with empty left-hand sides and with start strings rather than
+start symbols. This allows the program to be used as a recognizer: under the
+-r option the grammar is reversed and "production" of the start string is
+considered recognition.
+
+Call is
+	CSgen [-r[eversed]] [-s[teps]]
+for production with the compiled-in grammar and start string. Sample grammars
+are in gram?.c
+
+The -s causes intermediate sentential forms to be printed, with number and
+parent number. This allows the history of a production or reduction to be
+retrieved.

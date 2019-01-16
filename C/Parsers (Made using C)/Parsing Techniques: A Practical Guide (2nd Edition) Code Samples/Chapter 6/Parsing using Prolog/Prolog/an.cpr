@@ -1,0 +1,8 @@
+text(S,N,R):- x(S,a,N,R1), x(R1,b,N,R2), x(R2,c,N,R).
+
+x(S,A,[i],R):- symbol(S,A,R).
+x(S,A,[i|N],R):- symbol(S,A,R1), x(R1,A,N,R).
+
+symbol([A|R],A,R).
+
+try :- text([a,a,a,b,b,b,c,c,c],X,[]), print(X), nl.

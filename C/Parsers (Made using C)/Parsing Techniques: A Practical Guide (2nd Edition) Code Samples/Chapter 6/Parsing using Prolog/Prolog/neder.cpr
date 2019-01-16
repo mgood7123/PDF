@@ -1,0 +1,38 @@
+/*
+	Cancellation parsing in Prolog.
+	Example from Nederhof's thesis, Section 5.2.4, pg. 123.
+*/
+
+s(C) --> {not member(s,C)},				{report(s,C)},
+		a([s|C]), [a],
+		untoken(bar(s)), s(C).
+a(C) --> {not member(a,C)},				{report(a1,C)},
+		b([a|C]), [b],
+		untoken(bar(a)), a(C).
+a(C) --> {not member(a,C)},				{report(a2,C)},
+		[c], [c],
+		untoken(bar(a)), a(C).
+b(C) --> {not member(b,C)},				{report(b,C)},
+		s([b|C]), [s],
+		untoken(bar(b)), b(C).
+
+s(C) --> [bar(s)], print_rest.
+a(C) --> [bar(a)], print_rest.
+b(C) --> [bar(b)], print_rest.
+
+/* auxiliaries */
+
+print_rest(S,S) :- print('rest='), print(S), nl.
+
+untoken(T,S,[T|S]).
+
+member(X,[X|L]).
+member(X,[Y|L]) :- member(X,L).
+
+report(T1,T2) :- print(T1), tab(1), print(T2), nl.
+
+/* driver */
+
+text(S,R) :- s([],S,R).
+
+try :- text([c,c,a,s,b,a],[]).

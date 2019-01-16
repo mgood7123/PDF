@@ -1,0 +1,10 @@
+A precedence parser, precedence table generator, and table interpreter.
+
+The basis is a precedence relation function, in precedence.c, which, given a
+grammar, will for any two tokens determine their precedence relation by
+searching the grammar.
+
+This function can be used directly by the parser, in parser.c, or can be used
+by the precedence table generator, in table.c, to generate a table (in C),
+which is then compiled with parser.c to obtain a much faster parser.
+

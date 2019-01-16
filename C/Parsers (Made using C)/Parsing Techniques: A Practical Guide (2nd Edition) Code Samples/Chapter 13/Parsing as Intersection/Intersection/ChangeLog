@@ -1,0 +1,48 @@
+2004-09-28    <Dick@ACER>
+
+	* grammar.h: the grammar data structure consists of four components:
+	grammar, start_names[], nonterminals[], terminals[].  Of these,
+	grammar and start_names[] are modified by the expansion process,
+	but only grammar is copied, to 'its'. As a result, start_names was
+	sometimes modified and thus damaged.  This has been kludged in
+	print.c, but should be corrected.
+
+	* read.c: a variable 'min_state' added, to avoid spurious 0 states.
+
+2004-09-27    <Dick@ACER>
+
+	* grammar.h: changed the character type (in symbols, etc.) back to
+	char.
+
+2004-09-25    <Dick@ACER>
+
+	* clean.c: removed the suppressing of printing undefined start
+	symbols from print.c, and added a proper clean-up routine
+	remove_undefined_roots() to clean.c.  See, however, the comment in
+	grammar.h.
+
+2004-09-24    <Dick@ACER>
+	* grammar.h: changed the character type (in symbols, etc.) to
+	explicit 'unsigned char'.
+
+2004-09-18    Dick Grune (dick) at blade14.cs.vu.nl
+	* free.c: added a module free.[ch], to properly free memory.
+
+2004-09-15    Dick Grune (dick) at blade14.cs.vu.nl
+	* clean.c: remove_unreachable_symbols(void) had a transitive
+	closure in it around {mark_reachable_symbols();
+	remove_unmarked_symbols();}, which is not necessary, on second
+	thoughts. See comment at top of clean.c.
+
+2004-09-12    Dick Grune (dick) at blade14.cs.vu.nl
+	Added multiple start symbols, multiple start states, multiple FSAs.
+
+2004-09-09    Dick Grune (dick) at blade14.cs.vu.nl
+	Long symbol names implemented.
+
+2003-02-20    Dick Grune (dick) at blade14.cs.vu.nl
+	Added the catch-all symbol '?'
+
+2003-01-24    Dick Grune (dick) at blade14.cs.vu.nl
+	Working version.
+

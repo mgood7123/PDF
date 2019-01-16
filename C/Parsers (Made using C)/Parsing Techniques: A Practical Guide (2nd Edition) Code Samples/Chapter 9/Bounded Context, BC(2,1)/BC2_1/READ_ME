@@ -1,0 +1,5 @@
+This is a BC(2,1) parse table interpreter; it does not compute the table.
+
+Interpreter; obtains table and input as C code.
+
+The sample table in table.c was constructed by hand.

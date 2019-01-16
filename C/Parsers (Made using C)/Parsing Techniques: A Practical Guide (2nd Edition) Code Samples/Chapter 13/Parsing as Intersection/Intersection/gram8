@@ -1,0 +1,25 @@
+# simplifying a grammar
+S
+
+S -> A B C
+S -> B A C
+S -> A C B
+S -> B C A
+S -> C A B
+S -> C B A
+
+A -> a A
+A -> a
+B -> b B
+B -> b
+C -> c C
+C -> c
+.
+1
+3
+1 ? 1
+1 c 2
+2 ? 2
+2 a 3
+3 ? 3
+.
