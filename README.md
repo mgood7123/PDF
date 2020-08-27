@@ -1,0 +1,1 @@
+https://www.mobt3ath.com/uplode/book/book-51402.pdf - https://www.mobt3ath.com/uplode/book/ contains thousands of books, unfortunately it is ftp structured and no way of knowing what books are what untill you open them
